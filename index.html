@@ -38,7 +38,7 @@
                     per_side -= 45;
                 }
                 for (var plate of plates) {
-                    if (plate < per_side){
+                    if (per_side >= plate){
                         load.push(plate);
                         per_side -= plate;
                     }
