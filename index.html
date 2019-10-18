@@ -1,0 +1,59 @@
+<html>
+    <head>
+        <title>Plate Calculator</title>
+        <style>
+            .box {width:33%;float:left;}
+        </style>
+    </head>
+    <body>
+        <form id="plate_form">
+            <div class="box">
+                <h1>Weight</h1>
+                <input type="text" id="weight" />
+            </div>
+            <div class="box">
+                <h1>Bar</h1>
+                <input id="standard" checked type="radio" name="bar" value="45" /> Standard (45lb)<br/>
+                <input id="women" type="radio" name="bar" value="33" /> Women's (33lb)<br/>
+                <input id="tech" type="radio" name="bar" value="15" /> Technique (15lb)
+            </div>
+            <div class="box">
+                <h1>Plates <span id="per-side" /></h1>
+                <div id="plates"></div>
+            </div>
+        </form>
+        <script type="text/javascript">
+            var plates = [35, 25, 10, 10, 5, 2.5, 1.25, 1, 0.75, 0.5, 0.25];
+
+            function update(){
+                var form = document.getElementById('plate_form');
+                var weight = form.weight.value * 1;
+                var bar = form.bar.value * 1;
+                var per_side = (weight - bar) / 2;
+                document.getElementById('per-side').innerText = '(' + per_side + ' per side)';
+
+                var load = [];
+                while (per_side >= 45){
+                    load.push(45);
+                    per_side -= 45;
+                }
+                for (var plate of plates) {
+                    if (plate < per_side){
+                        load.push(plate);
+                        per_side -= plate;
+                    }
+                }
+
+                document.getElementById('plates').innerHTML = '';
+                for (var plate of load){
+                    document.getElementById('plates').innerHTML += '<strong>' + plate + '</strong> ';
+                }
+            }
+
+            document.getElementById('weight').onkeyup = update;
+            document.getElementById('standard').onchange = update;
+            document.getElementById('women').onchange = update;
+            document.getElementById('tech').onchange = update;
+        </script>
+    </body>
+</html>
