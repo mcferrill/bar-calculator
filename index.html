@@ -1,8 +1,18 @@
 <html>
     <head>
         <title>Plate Calculator</title>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <style>
+            body {background: #333;color:#eee;font-family:sans-serif;}
             .box {width:33%;float:left;}
+            #plates p {height:100px;float:left;background:#666;margin:5px;writing-mode:vertical-rl;text-align:center;}
+            #plates .p45, #plates .p5 {background:blue;}
+            #plates .p35 {background:yellow;color:#000;}
+            #plates .p25, #plates .p2\.5 {background:green;}
+            #plates .p10, #plates .p1\.25 {background:white;color:000;}
+            @media screen and (max-width: 500px) {
+                .box {width:100%;}
+            }
         </style>
     </head>
     <body>
@@ -45,15 +55,15 @@
                 }
 
                 document.getElementById('plates').innerHTML = '';
-                for (var plate of load){
-                    document.getElementById('plates').innerHTML += '<strong>' + plate + '</strong> ';
-                }
+                for (var plate of load)
+                    document.getElementById('plates').innerHTML += '<p class="p' + plate + '">' + plate + '</p>';
             }
 
             document.getElementById('weight').onkeyup = update;
             document.getElementById('standard').onchange = update;
             document.getElementById('women').onchange = update;
             document.getElementById('tech').onchange = update;
+            document.getElementById('weight').focus();
         </script>
     </body>
 </html>
