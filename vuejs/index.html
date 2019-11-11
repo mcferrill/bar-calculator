@@ -1,0 +1,76 @@
+<html>
+    <head>
+        <title>Plate Calculator</title>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <style>
+            body {background: #333;color:#eee;font-family:sans-serif;}
+            .box {width:33%;float:left;}
+            #plates p {height:100px;float:left;background:#666;margin:5px;writing-mode:vertical-rl;text-align:center;}
+            #plates [class="45"], #plates [class="5"] {background:blue;}
+            #plates [class="35"] {background:yellow;color:#000;}
+            #plates [class="25"], #plates [class="2.5"] {background:green;}
+            #plates [class="10"], #plates [class="p1.25"] {background:white;color:000;}
+            @media screen and (max-width: 500px) {
+                .box {width:100%;}
+            }
+        </style>
+    </head>
+    <body>
+        <form id="plate_form">
+            <div class="box">
+                <h1>Weight: {{ weight }}lbs</h1>
+                <input type="text" id="weight" v-model="weight" focus />
+            </div>
+            <div class="box">
+                <h1>Bar: {{ bar }}lbs</h1>
+                <input id="standard" checked type="radio" name="bar" value="45" v-model="bar" /> Standard (45lb)<br/>
+                <input id="women" type="radio" name="bar" value="33" v-model="bar" /> Women's (33lb)<br/>
+                <input id="tech" type="radio" name="bar" value="15" v-model="bar" /> Technique (15lb)
+            </div>
+            <div class="box">
+                <h1>Plates ({{ per_side }}lbs per side)</span></h1>
+                <div id="plates">
+                    <Plate
+                        v-for="plate in plates"
+                        v-bind:plate_size="plate"
+                        :class="plate"></Plate>
+                </div>
+            </div>
+        </form>
+        <script type="text/javascript" src="Vue.js"></script>
+        <script type="text/javascript">
+            const available_plates = [35, 25, 10, 10, 5, 2.5, 1.25, 1, 0.75, 0.5, 0.25];
+            Vue.component('Plate', {
+                'template': '<p :class="plate_size">{{ plate_size }}</p>',
+                'props': ['plate_size'],
+            });
+            var v = new Vue({
+                el: '#plate_form',
+                data: {
+                    'weight': 0,
+                    'bar': '45',
+                    'per_side': 0,
+                },
+                computed: {
+                    plates: function(){
+                        var per_side = (this.weight - this.bar) / 2;
+                        this.per_side = per_side;
+
+                        var load = [];
+                        while (per_side >= 45){
+                            load.push(45);
+                            per_side -= 45;
+                        }
+                        for (var plate of available_plates) {
+                            if (per_side >= plate){
+                                load.push(plate);
+                                per_side -= plate;
+                            }
+                        }
+                        return load;
+                    }
+                },
+            });
+        </script>
+    </body>
+</html>
