@@ -8,33 +8,31 @@
         <form id="plate_form">
             <div class="flex-none md:flex">
                 <div class="flex-none w-full md:w-1/3 md:flex-1 px-5 pt-2">
-                    <h1 class="text-xl mb-2">Weight: {{ work_weight }}lbs</h1>
-                    <label>
+                    <label class="w-1/2 float-left block p-2">
                         Work Weight
-                        <input class="mb-3 w-full p-3 rounded bg-gray-700" type="number" v-model="work_weight" autofocus />
+                        <input class="mt-1 mb-3 w-full p-2 rounded bg-gray-700" type="number" v-model="work_weight" autofocus />
                     </label>
-                    <label>
-                        Starting Warmup Weight
-                        <input class="w-full p-3 rounded bg-gray-700" type="number" v-model="warmup_weight" />
+                    <label class="w-1/2 float-left block p-2">
+                        Starting Warmup
+                        <input class="mt-1 w-full p-2 rounded bg-gray-700" type="number" v-model="warmup_weight" />
                     </label>
                 </div>
                 <div class="flex-none w-full md:w-1/3 md:flex-1 px-5 pt-2">
-                    <h1 class="text-xl my-2 md:mt-0">Bar: {{ bar }}lbs</h1>
-                    <label class="mb-1 rounded bg-gray-700 p-3 w-full block">
-                        <input checked type="radio" value="45" v-model="bar" /> Standard (45lb)<br/>
+                    <label class="mb-1 rounded bg-gray-700 p-2 w-full block">
+                        <input checked type="radio" value="45" v-model="bar" /> Standard Bar (45#)<br/>
                     </label>
-                    <label class="mb-1 rounded bg-gray-700 p-3 w-full block">
-                        <input type="radio" value="33" v-model="bar" /> Women's (33lb)<br/>
+                    <label class="mb-1 rounded bg-gray-700 p-2 w-full block">
+                        <input type="radio" value="33" v-model="bar" /> Women's Bar (33#)<br/>
                     </label>
-                    <label class="mb-1 rounded bg-gray-700 p-3 w-full block">
-                        <input type="radio" value="15" v-model="bar" /> Technique (15lb)
+                    <label class="mb-1 rounded bg-gray-700 p-2 w-full block">
+                        <input type="radio" value="15" v-model="bar" /> Technique Bar (15#)
                     </label>
                 </div>
                 <div class="flex-none w-full md:w-1/3 md:flex-1 px-5 pt-2">
                     <div v-for="weight in bars" class="mb-5">
-                        <h4 class="text-xl my-2 md:mt-0">{{ weight.weight }}# ({{ (weight.weight - bar) / 2 }}# / side + {{ bar }}# bar)</span></h4>
+                        <span class="block text-xl my-2 md:mt-0">{{ weight.weight }}# ({{ (weight.weight - bar) / 2 }}# / side + {{ bar }}# bar)</span></span>
                         <Plate
-                            class="mx-1 p-0 h-24 inline text-center rounded"
+                            class="mx-1 p-0 h-20 inline text-center rounded"
                             :class="{
                                 'bg-yellow-500 text-gray-900': (plate==35),
                                 'bg-blue-700': (plate==45 || plate==5),
