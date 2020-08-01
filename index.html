@@ -8,8 +8,15 @@
         <form id="plate_form">
             <div class="flex-none md:flex">
                 <div class="flex-none w-full md:w-1/3 md:flex-1 px-5 pt-2">
-                    <h1 class="text-xl mb-2">Weight: {{ weight }}lbs</h1>
-                    <input class="w-full p-3 rounded bg-gray-700" type="number" v-model="weight" autofocus />
+                    <h1 class="text-xl mb-2">Weight: {{ work_weight }}lbs</h1>
+                    <label>
+                        Work Weight
+                        <input class="mb-3 w-full p-3 rounded bg-gray-700" type="number" v-model="work_weight" autofocus />
+                    </label>
+                    <label>
+                        Starting Warmup Weight
+                        <input class="w-full p-3 rounded bg-gray-700" type="number" v-model="warmup_weight" />
+                    </label>
                 </div>
                 <div class="flex-none w-full md:w-1/3 md:flex-1 px-5 pt-2">
                     <h1 class="text-xl my-2 md:mt-0">Bar: {{ bar }}lbs</h1>
@@ -24,24 +31,43 @@
                     </label>
                 </div>
                 <div class="flex-none w-full md:w-1/3 md:flex-1 px-5 pt-2">
-                    <h1 class="text-xl my-2 md:mt-0">Plates: {{ per_side }}lbs / side</span></h1>
-                    <Plate
-                        class="mx-1 p-0 h-32 float-left text-center rounded"
-                        :class="{
-                            'bg-yellow-500 text-gray-900': (plate==35),
-                            'bg-blue-700': (plate==45 || plate==5),
-                            'bg-green-500': (plate==25 || plate==2.5),
-                            'bg-white text-gray-900': (plate==10 || plate==1.25),
-                            'bg-gray-800': (plate==1 || plate==.75 || plate==.5 || plate==.25)
-                        }"
-                        v-for="plate in plates"
-                        :plate="plate"></Plate>
+                    <div v-for="weight in bars" class="mb-5">
+                        <h4 class="text-xl my-2 md:mt-0">{{ weight.weight }}# ({{ (weight.weight - bar) / 2 }}# / side + {{ bar }}# bar)</span></h4>
+                        <Plate
+                            class="mx-1 p-0 h-24 inline text-center rounded"
+                            :class="{
+                                'bg-yellow-500 text-gray-900': (plate==35),
+                                'bg-blue-700': (plate==45 || plate==5),
+                                'bg-green-500': (plate==25 || plate==2.5),
+                                'bg-white text-gray-900': (plate==10 || plate==1.25),
+                                'bg-gray-800': (plate==1 || plate==.75 || plate==.5 || plate==.25)
+                            }"
+                            v-for="plate in weight.plates"
+                            :plate="plate"></Plate>
+                    </div>
                 </div>
             </div>
         </form>
         <script type="text/javascript" src="Vue.js"></script>
         <script type="text/javascript">
+            // Get a list of plates to make a given weight.
             const available_plates = [35, 25, 10, 10, 5, 2.5, 1.25, 1, 0.75, 0.5, 0.25];
+            function get_load(weight, bar){
+                var per_side = (weight - bar) / 2;
+                var load = [];
+                while (per_side >= 45){
+                    load.push(45);
+                    per_side -= 45;
+                }
+                for (var plate of available_plates) {
+                    if (per_side >= plate){
+                        load.push(plate);
+                        per_side -= plate;
+                    }
+                }
+                return load;
+            }
+
             Vue.component('Plate', {
                 'template': `<p style="writing-mode:vertical-rl;" :class="'p' + plate">{{ plate }}</p>`,
                 'props': ['plate'],
@@ -49,25 +75,34 @@
             var v = new Vue({
                 el: '#plate_form',
                 data: {
-                    'weight': 300,
+                    'work_weight': 320,
+                    'warmup_weight': 135,
                     'bar': 45,
                 },
                 computed: {
-                    per_side: function(){return (this.weight - this.bar) / 2},
-                    plates: function(){
-                        var per_side = this.per_side;
-                        var load = [];
-                        while (per_side >= 45){
-                            load.push(45);
-                            per_side -= 45;
+                    per_side: function(){return (this.work_weight - this.bar) / 2},
+                    bars: function(){
+                        var work_weight = this.work_weight / 1;
+                        var warmup_weight = this.warmup_weight / 1;
+                        var weights = [
+                            {
+                                'plates': get_load(warmup_weight, this.bar),
+                                'weight': warmup_weight,
+                            },
+                        ];
+                        var range = (work_weight / 1) - warmup_weight;
+
+                        for (var percent of [.33, .55, .75]){
+                            var weight = warmup_weight + (range * percent);
+                            weight -= (weight % 5);
+                            // Round weight to 5 pounds
+                            //var per_side = weight / 2;
+                            //per_side = per_side - (per_side % 5);
+                            weights.push({'plates': get_load(weight, this.bar), 'weight': weight});
                         }
-                        for (var plate of available_plates) {
-                            if (per_side >= plate){
-                                load.push(plate);
-                                per_side -= plate;
-                            }
-                        }
-                        return load;
+
+                        weights.push({'plates': get_load(this.work_weight, this.bar), 'weight': this.work_weight});
+                        return weights;
                     }
                 },
             });
