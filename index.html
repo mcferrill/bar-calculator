@@ -74,7 +74,7 @@
                 el: '#plate_form',
                 data: {
                     'work_weight': 320,
-                    'warmup_weight': 135,
+                    'warmup_weight': 45,
                     'bar': 45,
                 },
                 computed: {
@@ -82,20 +82,13 @@
                     bars: function(){
                         var work_weight = this.work_weight / 1;
                         var warmup_weight = this.warmup_weight / 1;
-                        var weights = [
-                            {
-                                'plates': get_load(warmup_weight, this.bar),
-                                'weight': warmup_weight,
-                            },
-                        ];
+                        var weights = [{'plates': get_load(warmup_weight, this.bar), 'weight': warmup_weight}];
                         var range = (work_weight / 1) - warmup_weight;
 
                         for (var percent of [.33, .55, .75]){
                             var weight = warmup_weight + (range * percent);
-                            weight -= (weight % 5);
                             // Round weight to 5 pounds
-                            //var per_side = weight / 2;
-                            //per_side = per_side - (per_side % 5);
+                            weight -= (weight % 5);
                             weights.push({'plates': get_load(weight, this.bar), 'weight': weight});
                         }
 
