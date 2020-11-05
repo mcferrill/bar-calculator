@@ -32,8 +32,10 @@
                     <div v-for="weight in bars" class="mb-5">
                         <span class="block text-xl my-2 md:mt-0">{{ weight.weight }}# ({{ (weight.weight - bar) / 2 }}# / side + {{ bar }}# bar)</span></span>
                         <Plate
-                            class="mx-1 p-0 h-20 inline text-center rounded"
+                            class="mx-1 p-0 inline text-center rounded"
                             :class="{
+                                'h-20': (plate>10),
+                                'h-16 mb-2 text-sm': (plate<24),
                                 'bg-yellow-500 text-gray-900': (plate==35),
                                 'bg-blue-700': (plate==45 || plate==5),
                                 'bg-green-500': (plate==25 || plate==2.5),
