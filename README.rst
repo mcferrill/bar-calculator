@@ -6,4 +6,10 @@ This is a simple one-page webapp that calculates what barbell plates to use for 
 
 The current version can be found on `netlify`_:
 
+Run locally with:
+
+```
+npm install && npm run dev
+```
+
 .. _netlify: https://bar-calculator.netlify.com/
