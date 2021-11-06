@@ -48,7 +48,6 @@
     </form>
   </div>
 </template>
-
 <script>
 // Get a list of plates to make a given weight.
 const available_plates = [35, 25, 10, 10, 5, 2.5, 1.25, 1, 0.75, 0.5, 0.25];
