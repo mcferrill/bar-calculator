@@ -94,12 +94,11 @@ export default {
       return weights;
     }
   },
-  layout: 'default',
 };
 </script>
 
 <style scoped>
 body {
-  @apply bg-gray-900
+  @apply bg-gray-900 h-screen
 }
 </style>
