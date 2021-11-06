@@ -97,3 +97,9 @@ export default {
   layout: 'default',
 };
 </script>
+
+<style scoped>
+body {
+  @apply bg-gray-900
+}
+</style>
