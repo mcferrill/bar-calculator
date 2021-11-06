@@ -1,5 +1,5 @@
 <template>
-  <div class="bg-gray-900 text-gray-100">
+  <div class="">
     <form id="plate_form">
       <div class="flex-none md:flex">
         <div class="flex-none w-full md:w-1/3 md:flex-1 px-5 pt-2 h-20">
@@ -97,3 +97,9 @@ export default {
   },
 };
 </script>
+
+<style>
+html, body {
+  @apply bg-gray-900 text-gray-100
+}
+</style>
