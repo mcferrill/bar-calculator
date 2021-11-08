@@ -69,6 +69,11 @@ function get_load(weight, bar){
 }
 
 export default {
+  head() {
+    return {
+      'title': 'Bar Calculator',
+    }
+  },
   data() {
     return {
       'work_weight': 320,
