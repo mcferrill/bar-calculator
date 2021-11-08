@@ -35,7 +35,7 @@
               :class="{
                 'h-20': (plate>10),
                 'h-16 mb-2 text-sm': (plate<24),
-                'bg-yellow-500 text-gray-900': (plate==35),
+                'bg-yellow-400 text-gray-900': (plate==35),
                 'bg-blue-700': (plate==45 || plate==5),
                 'bg-green-500': (plate==25 || plate==2.5),
                 'bg-white text-gray-900': (plate==10 || plate==1.25),
