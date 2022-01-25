@@ -1,10 +1,24 @@
+# bar-new
 
-# Bar Calculator
+## Project setup
+```
+npm install
+```
 
-This is a simple one-page webapp that calculates what barbell plates to use for a given target weight and bar.
+### Compiles and hot-reloads for development
+```
+npm run serve
+```
 
-The current version can be found on [netlify](https://bar-calculator.netlify.com/).
+### Compiles and minifies for production
+```
+npm run build
+```
 
-Run locally with:
+### Lints and fixes files
+```
+npm run lint
+```
 
-`npm install && npm run dev`
+### Customize configuration
+See [Configuration Reference](https://cli.vuejs.org/config/).
