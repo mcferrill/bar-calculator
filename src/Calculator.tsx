@@ -1,12 +1,12 @@
 import React, { useState } from 'react';
 
 function Plate({ plate }: { plate: number }) {
-	let className = '_bar mx-1 p-0 inline text-center rounded-sm';
+	let className = '_bar my-1 inline text-center rounded-sm';
 	if (plate > 10) className += ' h-20';
 	if (plate < 24) className += ' h-16 mb-2 text-sm';
 	if (plate == 35) className += ' bg-yellow-400 text-gray-900';
 	if (plate == 45 || plate == 5) className += ' bg-blue-700';
-	if (plate == 25 || plate == 2.5) className += ' bg-green-500';
+	if (plate == 25 || plate == 2.5) className += ' bg-emerald-500';
 	if (plate == 10 || plate == 1.25) className += ' bg-white text-gray-900';
 	if (plate == 1 || plate == .75 || plate == .5 || plate == .25) className += ' bg-gray-800';
 	return <p className={className}>{plate}</p>;
@@ -35,13 +35,10 @@ interface Set {
 }
 
 export default function Calculator() {
-	const [workWeight, setWorkWeight] = useState(300);
+	const [workWeight, setWorkWeight] = useState(320);
 	const [warmupWeight, setWarmupWeight] = useState(45);
 	const [bar, setBar] = useState(45);
 
-	//function computeSets(): Set[] {
-	//var work_weight = work_weight / 1;
-	//var warmup_weight = warmup_weight / 1;
 	let weights: Set[] = [{ 'plates': get_load(warmupWeight, bar), 'weight': warmupWeight }];
 	const range = (workWeight / 1) - warmupWeight;
 
@@ -53,7 +50,6 @@ export default function Calculator() {
 	}
 
 	weights.push({ 'plates': get_load(workWeight, bar), 'weight': workWeight });
-	//}
 
 	return (
 		<div>
@@ -84,7 +80,7 @@ export default function Calculator() {
 						{weights.map((set: Set) => (
 							<div className="mb-5" key={set.weight}>
 								<span className="block text-xl my-2 md:mt-0">
-									{set.weight}
+									#{set.weight} (#{(set.weight - bar) / 2} / side)
 								</span>
 								{set.plates?.map((plate: number) => (
 									<Plate key={plate} plate={plate} />
@@ -94,8 +90,6 @@ export default function Calculator() {
 					</div>
 				</div>
 			</form >
-		</div>);
-	//									}#({{ (weight.weight - bar) / 2}}# / side + {{ bar }}# bar)
-	//  computed: {
-	//    per_side: function(){return (this.work_weight - this.bar) / 2},
+		</div>
+	);
 }
