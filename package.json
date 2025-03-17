@@ -3,10 +3,9 @@
   "version": "2.0.0",
   "private": true,
   "scripts": {
-    "build": "bun run build.js"
+    "build": "bun run build.js && bunx @tailwindcss/cli -i ./src/assets/index.css -o ./dist/index.css"
   },
   "dependencies": {
-    "bun-plugin-tailwind": "^0.0.15",
     "react": "^19.0.0",
     "react-dom": "^19.0.0"
   },
@@ -14,7 +13,6 @@
     "@types/react": "^19.0.10",
     "@types/react-dom": "^19.0.4",
     "autoprefixer": "^10.4.21",
-    "bun-plugin-tailwindcss": "^0.0.4",
     "eslint": "^9.22.0",
     "postcss": "^8.5.3",
     "prettier": "^3.5.3",

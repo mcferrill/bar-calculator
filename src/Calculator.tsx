@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 
-function Plate({ plate }) {
+function Plate({ plate }: { plate: number }) {
 	let className = '_bar mx-1 p-0 inline text-center rounded-sm';
 	if (plate > 10) className += ' h-20';
 	if (plate < 24) className += ' h-16 mb-2 text-sm';
