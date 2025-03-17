@@ -3,7 +3,7 @@
   "version": "2.0.0",
   "private": true,
   "scripts": {
-    "build": "bun run build.js && bunx @tailwindcss/cli -i ./src/index.css -o ./dist/index.css"
+    "build": "bun run build.js && bun x @tailwindcss/cli -i ./src/index.css -o ./dist/index.css"
   },
   "dependencies": {
     "react": "^19.0.0",
