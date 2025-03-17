@@ -1,0 +1,5 @@
+@import "tailwindcss";
+
+_bar {
+    writing-mode: vertical-rl;
+}
