@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 
 function Plate({ plate }) {
-	let className = '_bar mx-1 p-0 inline text-center rounded';
+	let className = '_bar mx-1 p-0 inline text-center rounded-sm';
 	if (plate > 10) className += ' h-20';
 	if (plate < 24) className += ' h-16 mb-2 text-sm';
 	if (plate == 35) className += ' bg-yellow-400 text-gray-900';
@@ -39,22 +39,21 @@ export default function Calculator() {
 	const [warmupWeight, setWarmupWeight] = useState(45);
 	const [bar, setBar] = useState(45);
 
-	function computeSets(): Set[] {
-		//var work_weight = work_weight / 1;
-		//var warmup_weight = warmup_weight / 1;
-		let weights: Set[] = [{ 'plates': get_load(warmupWeight, bar), 'weight': warmupWeight }];
-		const range = (workWeight / 1) - warmupWeight;
+	//function computeSets(): Set[] {
+	//var work_weight = work_weight / 1;
+	//var warmup_weight = warmup_weight / 1;
+	let weights: Set[] = [{ 'plates': get_load(warmupWeight, bar), 'weight': warmupWeight }];
+	const range = (workWeight / 1) - warmupWeight;
 
-		for (const percent of [.33, .55, .75]) {
-			let weight = warmupWeight + (range * percent);
-			// Round weight to 5 pounds
-			weight -= (weight % 5);
-			weights.push({ 'plates': get_load(weight, bar), 'weight': weight });
-		}
-
-		weights.push({ 'plates': get_load(workWeight, bar), 'weight': workWeight });
-		return weights;
+	for (const percent of [.33, .55, .75]) {
+		let weight = warmupWeight + (range * percent);
+		// Round weight to 5 pounds
+		weight -= (weight % 5);
+		weights.push({ 'plates': get_load(weight, bar), 'weight': weight });
 	}
+
+	weights.push({ 'plates': get_load(workWeight, bar), 'weight': workWeight });
+	//}
 
 	return (
 		<div>
@@ -63,26 +62,26 @@ export default function Calculator() {
 					<div className="flex-none w-full md:w-1/3 md:flex-1 px-5 pt-2 h-20">
 						<label className="w-1/2 block float-left pr-1">
 							Work Weight
-							<input className="mt-1 mb-3 w-full p-2 rounded bg-gray-700" type="number" value={workWeight} onChange={() => setWorkWeight(this.value)} autoFocus={true} />
+							<input className="mt-1 mb-3 w-full p-2 rounded-sm bg-gray-700" type="number" value={workWeight} onChange={(e: React.ChangeEvent<HTMLInputElement>) => setWorkWeight(parseInt(e.target.value))} autoFocus={true} />
 						</label>
 						<label className="w-1/2 float-left block">
 							Starting Warmup
-							<input className="mt-1 w-full p-2 rounded bg-gray-700" type="number" value={warmupWeight} onChange={() => setWarmupWeight(this.value)} />
+							<input className="mt-1 w-full p-2 rounded-sm bg-gray-700" type="number" value={warmupWeight} onChange={(e: React.ChangeEvent<HTMLInputElement>) => setWarmupWeight(parseInt(e.target.value))} />
 						</label>
 					</div>
 					<div className="flex-none w-full md:w-1/3 md:flex-1 px-5 pt-2">
-						<label className="mb-1 rounded bg-gray-700 p-2 w-full block">
+						<label className="mb-1 rounded-sm bg-gray-700 p-2 w-full block">
 							<input type="radio" name="bar" checked={bar != 33 && bar != 15} onChange={() => setBar(45)} /> Standard Bar (45#)<br />
 						</label>
-						<label className="mb-1 rounded bg-gray-700 p-2 w-full block">
+						<label className="mb-1 rounded-sm bg-gray-700 p-2 w-full block">
 							<input type="radio" name="bar" checked={bar == 33} onChange={() => setBar(33)} /> Women's Bar (33#)<br />
 						</label>
-						<label className="mb-1 rounded bg-gray-700 p-2 w-full block">
+						<label className="mb-1 rounded-sm bg-gray-700 p-2 w-full block">
 							<input type="radio" name="bar" checked={bar == 15} onChange={() => setBar(15)} /> Technique Bar (15#)
 						</label>
 					</div>
 					<div className="flex-none w-full md:w-1/3 md:flex-1 px-5 pt-2">
-						{computeSets().map((set: Set) => (
+						{weights.map((set: Set) => (
 							<div className="mb-5" key={set.weight}>
 								<span className="block text-xl my-2 md:mt-0">
 									{set.weight}

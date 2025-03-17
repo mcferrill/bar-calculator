@@ -3,10 +3,10 @@
   "version": "2.0.0",
   "private": true,
   "scripts": {
-    "serve": "vue-cli-service serve ",
-    "build": "bun run build.js && bunx @tailwindcss/cli -i ./src/assets/index.css -o ./dist/index.css"
+    "build": "bun run build.js"
   },
   "dependencies": {
+    "bun-plugin-tailwind": "^0.0.15",
     "react": "^19.0.0",
     "react-dom": "^19.0.0"
   },
