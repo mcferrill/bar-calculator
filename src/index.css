@@ -1,4 +1,12 @@
-@import "tailwindcss";
+@config "../tailwind.config.js";
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+body {
+    @apply bg-gray-900 text-gray-100 h-full;
+}
 
 ._bar {
     writing-mode: vertical-rl;

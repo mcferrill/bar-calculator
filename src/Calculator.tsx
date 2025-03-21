@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 
 function Plate({ plate }: { plate: number }) {
-	let className = '_bar my-1 inline text-center rounded-sm';
+	let className = '_bar m-1 inline text-center rounded-sm';
 	if (plate > 10) className += ' h-20';
 	if (plate < 24) className += ' h-16 mb-2 text-sm';
 	if (plate == 35) className += ' bg-yellow-400 text-gray-900';
