@@ -3,7 +3,8 @@
   "version": "2.0.0",
   "private": true,
   "scripts": {
-    "build": "bun run build.js"
+    "build": "bun run build.js",
+    "dev": "bun run serve.js"
   },
   "dependencies": {
     "bun-plugin-tailwind": "^0.0.15",
