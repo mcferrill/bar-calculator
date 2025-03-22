@@ -8,6 +8,7 @@
         "lint": "bun run tsc --noEmit"
     },
     "dependencies": {
+        "@sentry/react": "^9.8.0",
         "bun-plugin-tailwind": "^0.0.15",
         "react": "^19.0.0",
         "react-dom": "^19.0.0",
