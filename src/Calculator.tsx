@@ -3,15 +3,15 @@ import "./index.css";
 
 // A single plate delineated by label, size, and color.
 function Plate({ plate }: { plate: number }) {
-	let className = '_plate [writing-mode:vertical-lr] my-1 inline text-center rounded-sm';
-	if (plate > 10) className += ' h-20';
-	if (plate < 24) className += ' h-16 mb-2 text-sm';
-	if (plate == 35) className += ' bg-yellow-400 text-gray-900';
-	if (plate == 45 || plate == 5) className += ' bg-blue-700';
-	if (plate == 25 || plate == 2.5) className += ' bg-emerald-500';
-	if (plate == 10 || plate == 1.25) className += ' bg-white text-gray-900';
-	if (plate == 1 || plate == .75 || plate == .5 || plate == .25) className += ' bg-gray-800';
-	return <p className={className}>{plate}</p>;
+	let classes = '_plate [writing-mode:vertical-lr] my-1 inline text-center rounded-sm';
+	if (plate > 10) classes += ' h-20';
+	if (plate < 24) classes += ' h-16 mb-2 text-sm';
+	if (plate == 35) classes += ' bg-yellow-400 text-gray-900';
+	if (plate == 45 || plate == 5) classes += ' bg-blue-700';
+	if (plate == 25 || plate == 2.5) classes += ' bg-emerald-500';
+	if (plate == 10 || plate == 1.25) classes += ' bg-white text-gray-900';
+	if (plate == 1 || plate == .75 || plate == .5 || plate == .25) classes += ' bg-gray-800';
+	return <p className={classes}>{plate}</p>;
 }
 
 const availablePlates = [35, 25, 10, 10, 5, 2.5, 1.25, 1, 0.75, 0.5, 0.25];
