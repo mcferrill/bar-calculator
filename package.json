@@ -4,7 +4,8 @@
     "private": true,
     "scripts": {
         "build": "bun run build.ts",
-        "dev": "bun run serve.ts"
+        "dev": "bun run serve.ts",
+        "lint": "bun run tsc --noEmit"
     },
     "dependencies": {
         "bun-plugin-tailwind": "^0.0.15",
