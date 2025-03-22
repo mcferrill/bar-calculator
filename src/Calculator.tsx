@@ -1,4 +1,6 @@
 import React, { useState } from 'react';
+import { createRoot } from "react-dom/client";
+import "./index.css";
 
 function Plate({ plate }: { plate: number }) {
 	let className = '_bar m-1 inline text-center rounded-sm';
@@ -93,3 +95,9 @@ export default function Calculator() {
 		</div>
 	);
 }
+
+//const container = document.getElementById("root");
+//if (!container) throw new Error("Root container not found");
+//
+//const root = createRoot(container);
+//root.render(<Calculator />);
