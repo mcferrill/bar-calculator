@@ -58,7 +58,7 @@ export default function Calculator() {
 	sets.push(<Load weight={workWeight} bar={bar} />);
 
 	return (
-		<div className="flex-none md:flex bg-gray-900 text-gray-100 absolute h-full w-full">
+		<div className="flex-none md:flex">
 			<div className="flex-none w-full md:w-1/3 md:flex-1 px-5 pt-2 h-20">
 				<label className="w-1/2 block float-left pr-1">
 					Work Weight
