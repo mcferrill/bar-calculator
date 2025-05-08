@@ -1,2 +1,2 @@
 [build]
-  command = "bun run build.ts && bun run tailwindcss -i ./src/index.css -o ./dist/index.css"
+  command = "bun run build"
