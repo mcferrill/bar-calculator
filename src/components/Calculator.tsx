@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import "./index.css";
+// import "./index.css";
 
 // A single plate delineated by label, size, and color.
 function Plate({ plate }: { plate: number }) {

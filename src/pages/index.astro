@@ -1,3 +1,8 @@
+---
+import Calculator from "../components/Calculator";
+import "../styles/global.css";
+---
+
 <!DOCTYPE html>
 <html>
 
@@ -5,12 +10,11 @@
     <meta charset="UTF-8">
     <title>Bar Calculator</title>
     <meta name="viewport" content="width=device-width,initial-scale=1.0">
-    <link rel="stylesheet" type="text/css" href="./index.css" />
 </head>
 
 <body class="bg-gray-900 text-gray-100">
     <div id="root"></div>
-    <script type="text/javascript" src="./index.js"></script>
+    <Calculator client:load />
 </body>
 
 </html>

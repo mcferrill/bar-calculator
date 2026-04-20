@@ -1,3 +1,2 @@
-bun latest
-node 20
-
+bun  latest
+nodejs lts
