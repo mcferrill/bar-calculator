@@ -1,0 +1,30 @@
+{
+	"$schema": "./node_modules/wrangler/config-schema.json",
+	"name": "barcalc",
+	"main": "@astrojs/cloudflare/entrypoints/server",
+	"compatibility_date": "2026-07-25",
+	"compatibility_flags": [
+		"nodejs_compat"
+	],
+	"assets": {
+		"directory": "./dist",
+		"binding": "ASSETS"
+	},
+	"observability": {
+		"enabled": true
+	},
+	// After first auth: `npx wrangler d1 create barcalc-db`
+	// then set database_id below (or rely on Wrangler auto-provision on deploy).
+	"d1_databases": [
+		{
+			"binding": "DB",
+			"database_name": "barcalc-db",
+			"migrations_dir": "migrations"
+		},
+		{
+			"binding": "barcalc_db",
+			"database_name": "barcalc-db",
+			"database_id": "15c9fd98-629d-4112-897b-92fe0813ec3b"
+		}
+	]
+}
