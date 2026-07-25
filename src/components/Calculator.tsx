@@ -3,7 +3,7 @@ import React, { useState } from 'react';
 
 // A single plate delineated by label, size, and color.
 function Plate({ plate }: { plate: number }) {
-	let classes = '_plate [writing-mode:vertical-lr] mx-1 inline-block text-center rounded-sm';
+	let classes = '_plate [writing-mode:vertical-lr] ml-1 mr-1 inline-block text-center rounded-sm';
 	if (plate > 10) classes += ' h-20';
 	if (plate < 24) classes += ' h-16 mb-2 text-sm';
 	if (plate == 35) classes += ' bg-yellow-400 text-gray-900';
