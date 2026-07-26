@@ -3,7 +3,6 @@ import { useState } from "react";
 type BlockDraft = {
 	sets: string;
 	reps: string;
-	repsTo: string;
 	weight: string;
 };
 
@@ -16,7 +15,6 @@ type LiftDraft = {
 const emptyBlock = (): BlockDraft => ({
 	sets: "3",
 	reps: "5",
-	repsTo: "",
 	weight: "",
 });
 
@@ -82,19 +80,13 @@ export default function SessionForm() {
 
 	return (
 		<form method="POST" className="space-y-4">
-			<div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+			<input type="hidden" name="unit" value="lb" />
+			<div className="grid grid-cols-2 gap-3">
 				<label className={label}>
 					Date
 					<input className={field} type="date" name="date" required defaultValue={today} />
 				</label>
 				<label className={label}>
-					Unit
-					<select className={field} name="unit" defaultValue="lb">
-						<option value="lb">lb</option>
-						<option value="kg">kg</option>
-					</select>
-				</label>
-				<label className={`${label} col-span-2 sm:col-span-1`}>
 					Bodyweight
 					<input
 						className={field}
@@ -156,7 +148,7 @@ export default function SessionForm() {
 					{lift.blocks.map((block, bi) => (
 						<div
 							key={bi}
-							className="grid grid-cols-2 sm:grid-cols-5 gap-2 items-end"
+							className="grid grid-cols-2 sm:grid-cols-4 gap-2 items-end"
 						>
 							<label className={label}>
 								Sets
@@ -180,21 +172,6 @@ export default function SessionForm() {
 									step="any"
 									value={block.reps}
 									onChange={(e) => updateBlock(li, bi, { reps: e.target.value })}
-								/>
-							</label>
-							<label className={label}>
-								Reps to
-								<input
-									className={field}
-									type="number"
-									name={`lift_${li}_block_${bi}_repsTo`}
-									min="0"
-									step="any"
-									placeholder="range"
-									value={block.repsTo}
-									onChange={(e) =>
-										updateBlock(li, bi, { repsTo: e.target.value })
-									}
 								/>
 							</label>
 							<label className={label}>
