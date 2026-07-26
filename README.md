@@ -4,9 +4,10 @@ Calculate barbell plates and warmups for standard, women's, and technique bars.
 
 ## Stack
 
-- [Astro](https://astro.build/) + React island
+- [Astro](https://astro.build/) + React islands
 - Tailwind CSS v4
-- Cloudflare Workers (`@astrojs/cloudflare`) + D1 (ready)
+- Cloudflare Workers (`@astrojs/cloudflare`) + D1
+- Exercise log: live content collection (`src/live.config.ts`) over D1
 
 ## Develop
 
@@ -43,3 +44,10 @@ Custom domain: attach `barcalc.app` on the Worker (zone already on Cloudflare DN
 | `npm run deploy` | Build + `wrangler deploy` |
 | `npm run db:migrate:local` | Apply D1 migrations locally |
 | `npm run db:migrate:remote` | Apply D1 migrations to remote |
+
+## Exercise log
+
+- Schema: session → lifts → blocks (`sets`, `reps`, optional `repsTo` / `weight` / timed fields)
+- Read path: `getLiveCollection("sessions")` via D1 live loader
+- Write path: POST `/log` form → `insertSession(env.DB, …)`
+- Migrate before first use: `npm run db:migrate:local` (or `:remote`)

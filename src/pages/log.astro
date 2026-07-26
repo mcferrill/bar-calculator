@@ -1,0 +1,38 @@
+---
+export const prerender = false;
+import BaseLayout from "../layouts/BaseLayout.astro";
+import ExerciseLog from "../components/ExerciseLog";
+import { getLiveCollection } from "astro:content";
+import { env } from "cloudflare:workers";
+import { insertSession, sessionFromFormData } from "../lib/session";
+
+let formError: string | undefined;
+
+if (Astro.request.method === "POST") {
+	try {
+		const form = await Astro.request.formData();
+		const session = sessionFromFormData(form);
+		await insertSession(env.DB, session);
+		return Astro.redirect("/log");
+	} catch (err) {
+		formError =
+			err instanceof Error ? err.message : "Could not save session.";
+	}
+}
+
+const result = await getLiveCollection("sessions");
+const sessions = (result.entries ?? []).map((entry) => ({
+	id: entry.id,
+	...entry.data,
+}));
+const loadError = result.error?.message;
+---
+
+<BaseLayout title="Exercise Log · Bar Calculator" active="log">
+	<ExerciseLog
+		client:load
+		sessions={sessions}
+		error={loadError}
+		formError={formError}
+	/>
+</BaseLayout>

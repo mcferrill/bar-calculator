@@ -1,21 +1,9 @@
 ---
 export const prerender = true;
+import BaseLayout from "../layouts/BaseLayout.astro";
 import Calculator from "../components/Calculator";
-import "../styles/global.css";
 ---
 
-<!DOCTYPE html>
-<html class="bg-gray-900">
-
-<head>
-    <meta charset="UTF-8">
-    <title>Bar Calculator</title>
-    <meta name="viewport" content="width=device-width,initial-scale=1.0">
-</head>
-
-<body class="min-h-screen bg-gray-900 text-gray-100">
-    <div id="root"></div>
-    <Calculator client:load />
-</body>
-
-</html>
+<BaseLayout active="calculator">
+	<Calculator client:load />
+</BaseLayout>

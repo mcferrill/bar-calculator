@@ -13,18 +13,12 @@
 	"observability": {
 		"enabled": true
 	},
-	// After first auth: `npx wrangler d1 create barcalc-db`
-	// then set database_id below (or rely on Wrangler auto-provision on deploy).
 	"d1_databases": [
 		{
 			"binding": "DB",
 			"database_name": "barcalc-db",
+			"database_id": "15c9fd98-629d-4112-897b-92fe0813ec3b",
 			"migrations_dir": "migrations"
-		},
-		{
-			"binding": "barcalc_db",
-			"database_name": "barcalc-db",
-			"database_id": "15c9fd98-629d-4112-897b-92fe0813ec3b"
 		}
 	]
 }
