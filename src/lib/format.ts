@@ -7,6 +7,20 @@ export type FormatBlock = {
 	distanceM?: number;
 };
 
+export function formatSessionDate(iso: string): { month: string; day: string } {
+	const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(iso);
+	if (!match) return { month: iso, day: iso };
+	const date = new Date(Number(match[1]), Number(match[2]) - 1, Number(match[3]));
+	return {
+		month: date.toLocaleDateString("en-US", { month: "long", year: "numeric" }),
+		day: date.toLocaleDateString("en-US", {
+			weekday: "short",
+			month: "short",
+			day: "numeric",
+		}),
+	};
+}
+
 export function formatBlock(block: FormatBlock, unit: string): string {
 	const parts: string[] = [];
 	if (block.repsTo != null && block.reps != null) {

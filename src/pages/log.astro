@@ -4,19 +4,47 @@ import BaseLayout from "../layouts/BaseLayout.astro";
 import ExerciseLog from "../components/ExerciseLog";
 import { getLiveCollection } from "astro:content";
 import { env } from "cloudflare:workers";
-import { insertSession, sessionFromFormData } from "../lib/session";
+import {
+	deleteSession,
+	formValuesFromFormData,
+	insertSession,
+	sessionFromFormValues,
+	sessionToFormValues,
+	updateSession,
+	type SessionFormValues,
+} from "../lib/session";
 
 let formError: string | undefined;
+let editId = Astro.url.searchParams.get("edit") ?? undefined;
+let submitted: SessionFormValues | undefined;
 
 if (Astro.request.method === "POST") {
 	try {
 		const form = await Astro.request.formData();
-		const session = sessionFromFormData(form);
-		await insertSession(env.DB, session);
-		return Astro.redirect("/log");
+		const intent = String(form.get("intent") ?? "create");
+		if (intent === "delete") {
+			const id = String(form.get("id") ?? "");
+			if (!id) throw new Error("Missing session.");
+			if (!(await deleteSession(env.DB, id))) throw new Error("Session not found.");
+			return Astro.redirect("/log");
+		}
+		if (intent !== "create" && intent !== "update") throw new Error("Unknown action.");
+		submitted = formValuesFromFormData(form);
+		const session = sessionFromFormValues(submitted);
+		let savedId: string;
+		if (intent === "update") {
+			savedId = String(form.get("id") ?? "");
+			editId = savedId || editId;
+			if (!savedId) throw new Error("Missing session.");
+			if (!(await updateSession(env.DB, savedId, session))) {
+				throw new Error("Session not found.");
+			}
+		} else {
+			savedId = await insertSession(env.DB, session);
+		}
+		return Astro.redirect(`/log?saved=${savedId}`);
 	} catch (err) {
-		formError =
-			err instanceof Error ? err.message : "Could not save session.";
+		formError = err instanceof Error ? err.message : "Could not save session.";
 	}
 }
 
@@ -25,7 +53,11 @@ const sessions = (result.entries ?? []).map((entry) => ({
 	id: entry.id,
 	...entry.data,
 }));
+const editing = editId ? sessions.find((session) => session.id === editId) : undefined;
+if (editId && !editing && !submitted) formError = formError ?? "Session not found.";
+const formInitial = submitted ?? (editing ? sessionToFormValues(editing) : undefined);
 const loadError = result.error?.message;
+const savedId = Astro.url.searchParams.get("saved") ?? undefined;
 ---
 
 <BaseLayout title="Exercise Log · Bar Calculator" active="log">
@@ -34,5 +66,7 @@ const loadError = result.error?.message;
 		sessions={sessions}
 		error={loadError}
 		formError={formError}
+		formInitial={formInitial}
+		savedId={savedId}
 	/>
 </BaseLayout>
