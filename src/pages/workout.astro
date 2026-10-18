@@ -1,0 +1,142 @@
+---
+export const prerender = false;
+import { env } from "cloudflare:workers";
+import { z } from "astro/zod";
+import BaseLayout from "../layouts/BaseLayout.astro";
+import Calculator from "../components/Calculator";
+import { changeWorkout, getWorkout, startWorkout } from "../lib/workout";
+import { formatBlock, formatSessionDate } from "../lib/format";
+
+Astro.response.headers.set("Cache-Control", "no-store");
+let id = Astro.url.searchParams.get("id") ?? "";
+let error: string | undefined;
+let submitted: FormData | undefined;
+if (Astro.request.method === "POST") {
+	try {
+		submitted = await Astro.request.formData();
+		if (submitted.get("intent") === "start") {
+			id = await startWorkout(env.DB, submitted);
+			return Astro.redirect(`/workout?id=${id}`, 303);
+		}
+		const status = await changeWorkout(env.DB, id, submitted);
+		if (status === "completed") return Astro.redirect(`/log?saved=${id}#session-${id}`, 303);
+		if (status === "discarded") return Astro.redirect("/log#", 303);
+		return Astro.redirect(`/workout?id=${id}&saved=1&lift=${encodeURIComponent(String(submitted.get("name") ?? ""))}#record`, 303);
+	} catch (err) {
+		Astro.response.status = 400;
+		error = err instanceof z.ZodError ? err.issues.map((issue) => issue.message).join(" ")
+			: err instanceof Error ? err.message : "Could not save workout. Your recorded sets are unchanged.";
+	}
+}
+let workout;
+try {
+	workout = id ? await getWorkout(env.DB, id) : undefined;
+} catch {
+	error = "Could not load workout. Please try again.";
+}
+if (workout?.status === "completed") return Astro.redirect(`/log?saved=${id}`);
+if (!workout) Astro.response.status = error ? 400 : 404;
+const selected = workout?.lifts.find((lift) => lift.name.toLowerCase() === Astro.url.searchParams.get("lift")?.toLowerCase()) ?? workout?.lifts.at(-1);
+const last = selected?.blocks.at(-1);
+const value = (name: string, fallback = "") => submitted ? String(submitted.get(name) ?? fallback) : fallback;
+const field = "mt-1 w-full rounded-sm bg-gray-700 p-2 text-base";
+const button = "min-h-11 rounded-sm bg-blue-700 px-4 py-2 text-sm font-medium";
+---
+<BaseLayout title="Workout · Bar Calculator" active="log">
+	<div class="mx-auto max-w-5xl space-y-5 px-5 py-4">
+		<a href="/log" class="text-blue-300 underline">← Exercise Log</a>
+		{error && <p role="alert" class="rounded-sm border border-yellow-400 p-3 text-yellow-300">{error}</p>}
+		{!workout ? <p>Workout not found. Return to the log to start or resume one.</p> : <>
+			<header>
+				<h1 class="text-xl">Workout in progress</h1>
+				<p class="text-sm text-gray-300">{formatSessionDate(workout.date).day} · {workout.unit}</p>
+			</header>
+			{Astro.url.searchParams.has("saved") && !error && <p role="status" class="text-emerald-400">Saved</p>}
+			<div class="grid items-start gap-6 md:grid-cols-2">
+				<div class="space-y-5">
+					<section class="space-y-3" aria-labelledby="recorded-heading">
+						<h2 id="recorded-heading" class="font-medium">Recorded sets</h2>
+						{!workout.lifts.length && <p class="text-gray-300">No sets yet. Record your first warmup or work set below.</p>}
+						{workout.lifts.map((lift, li) => <section class="rounded-sm bg-gray-800 p-3">
+							<div class="flex justify-between gap-3">
+								<h3 class="font-medium">{lift.name}</h3>
+								<a class="text-sm text-blue-300 underline" href={`/workout?id=${id}&lift=${encodeURIComponent(lift.name)}#record`}>Use this lift</a>
+							</div>
+							<ul class="mt-2 space-y-2">{lift.blocks.map((block, bi) => <li class="flex items-center justify-between gap-2">
+								<span class="text-sm">{bi + 1}. {formatBlock(block, workout.unit)}</span>
+								<form method="POST" data-confirm="Remove this recorded set?">
+									<input type="hidden" name="intent" value="remove" />
+									<input type="hidden" name="revision" value={workout.revision} />
+									<input type="hidden" name="lift" value={li} />
+									<input type="hidden" name="block" value={bi} />
+									<button class="min-h-11 px-2 text-sm text-red-300" aria-label={`Remove ${lift.name} set ${bi + 1}`}>Remove</button>
+								</form>
+							</li>)}</ul>
+						</section>)}
+					</section>
+				</div>
+					<form method="POST" id="record" class="space-y-3 rounded-sm bg-gray-800 p-4" data-record>
+						<h2 class="font-medium">Record a set</h2>
+						<input type="hidden" name="intent" value="record" />
+						<input type="hidden" name="revision" value={workout.revision} />
+						<label class="block">Lift / activity
+							<input class={field} name="name" list="lift-names" required maxlength="100" value={value("name", selected?.name ?? "")} placeholder="Squat, Bench Press, Run…" />
+						</label>
+						<datalist id="lift-names">{workout.lifts.map((lift) => <option value={lift.name} />)}</datalist>
+						<div class="grid grid-cols-3 gap-3">
+							<label>Sets<input class={field} type="number" name="sets" required min="1" max="100" step="1" inputmode="numeric" value={value("sets", String(last?.sets ?? 1))} /></label>
+							<label>Reps<input class={field} type="number" name="reps" min="1" step="1" inputmode="numeric" value={value("reps", String(last?.reps ?? 5))} /></label>
+							<label>Weight ({workout.unit})<input class={field} type="number" name="weight" min="0" step="any" inputmode="decimal" value={value("weight", String(last?.weight ?? ""))} /></label>
+						</div>
+						{workout.unit === "lb" && <Calculator client:load embedded initialWeight={Number(value("weight", String(last?.weight ?? 0)))} />}
+						<details open={Boolean(last?.durationSec || last?.distanceM || submitted?.get("durationSec") || submitted?.get("distanceM"))}>
+							<summary class="cursor-pointer text-sm text-gray-300">Cardio / timed activity</summary>
+							<div class="mt-3 grid grid-cols-2 gap-3">
+								<label>Duration (seconds)<input class={field} type="number" name="durationSec" min="1" step="1" value={value("durationSec", String(last?.durationSec ?? ""))} /></label>
+								<label>Distance (meters)<input class={field} type="number" name="distanceM" min="0.01" step="any" value={value("distanceM", String(last?.distanceM ?? ""))} /></label>
+							</div>
+						</details>
+						<button class={button}>Record set</button>
+					</form>
+			</div>
+			<form method="POST" class="space-y-3 border-t border-gray-700 pt-4" data-finish>
+				<input type="hidden" name="intent" value="finish" />
+				<input type="hidden" name="revision" value={workout.revision} />
+				<label class="block">Session notes<textarea name="notes" maxlength="10000" class={field}>{value("notes", workout.notes ?? "")}</textarea></label>
+				<button class={button} disabled={!workout.lifts.length}>Finish workout</button>
+			</form>
+			<form method="POST" data-confirm="Discard this workout and all its recorded sets?">
+				<input type="hidden" name="intent" value="discard" />
+				<input type="hidden" name="revision" value={workout.revision} />
+				<button class="min-h-11 text-sm text-red-300">Discard workout</button>
+			</form>
+		</>}
+	</div>
+</BaseLayout>
+<script>
+	for (const form of document.querySelectorAll<HTMLFormElement>("form[data-confirm]")) {
+		form.addEventListener("submit", (event) => {
+			if (!confirm(form.dataset.confirm)) event.preventDefault();
+		});
+	}
+	// ponytail: native POSTs persist completed sets; warn before losing unrecorded inputs.
+	const dirty = new Set<EventTarget>();
+	let submitting = false;
+	for (const form of document.querySelectorAll("form[data-record], form[data-finish]")) {
+		form.addEventListener("input", () => { dirty.add(form); });
+	}
+	for (const form of document.querySelectorAll("form")) {
+		form.addEventListener("submit", (event) => {
+			if (event.defaultPrevented) return;
+			const target = event.currentTarget as HTMLFormElement;
+			if ([...dirty].some((form) => form !== target) && !confirm("Only recorded sets are saved. Continue with this action and leave any other unsaved inputs?")) {
+				event.preventDefault();
+				return;
+			}
+			submitting = true;
+		});
+	}
+	window.addEventListener("beforeunload", (event) => {
+		if (dirty.size && !submitting) event.preventDefault();
+	});
+</script>

@@ -143,6 +143,8 @@ export default function SessionForm({
 					<input type="hidden" name="intent" value={editing ? "update" : "create"} />
 					{initial?.id ? <input type="hidden" name="id" value={initial.id} /> : null}
 					<input type="hidden" name="liftCount" value={lifts.length} />
+					{/* Preserve historical units without offering unit selection for new entries. */}
+					<input type="hidden" name="unit" value={initial?.unit ?? "lb"} />
 
 					{lifts.map((lift, li) => (
 						<fieldset
@@ -223,7 +225,7 @@ export default function SessionForm({
 											/>
 										</label>
 										<label className={label}>
-											Weight
+											Weight ({initial?.unit ?? "lb"})
 											<input
 												className={field}
 												type="number"
@@ -282,9 +284,9 @@ export default function SessionForm({
 
 					<details ref={detailsRef} className="rounded-sm border border-gray-700 p-3">
 						<summary className="cursor-pointer text-sm text-gray-100/80">
-							Date, unit, bodyweight
+							Date, bodyweight
 						</summary>
-						<div className="mt-3 grid gap-3 sm:grid-cols-3">
+						<div className="mt-3 grid gap-3 sm:grid-cols-2">
 							<label className={label}>
 								Date
 								<input
@@ -296,14 +298,7 @@ export default function SessionForm({
 								/>
 							</label>
 							<label className={label}>
-								Unit
-								<select className={field} name="unit" defaultValue={initial?.unit ?? "lb"}>
-									<option value="lb">lb</option>
-									<option value="kg">kg</option>
-								</select>
-							</label>
-							<label className={label}>
-								Bodyweight
+								Bodyweight ({initial?.unit ?? "lb"})
 								<input
 									className={field}
 									type="number"

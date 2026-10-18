@@ -2,6 +2,8 @@
 export const prerender = false;
 import BaseLayout from "../layouts/BaseLayout.astro";
 import ExerciseLog from "../components/ExerciseLog";
+import { activeWorkouts } from "../lib/workout";
+
 import { getLiveCollection } from "astro:content";
 import { env } from "cloudflare:workers";
 import {
@@ -14,6 +16,7 @@ import {
 	type SessionFormValues,
 } from "../lib/session";
 
+Astro.response.headers.set("Cache-Control", "no-store");
 let formError: string | undefined;
 let editId = Astro.url.searchParams.get("edit") ?? undefined;
 let submitted: SessionFormValues | undefined;
@@ -58,13 +61,18 @@ if (editId && !editing && !submitted) formError = formError ?? "Session not foun
 const formInitial = submitted ?? (editing ? sessionToFormValues(editing) : undefined);
 const loadError = result.error?.message;
 const savedId = Astro.url.searchParams.get("saved") ?? undefined;
+let active: Awaited<ReturnType<typeof activeWorkouts>> = [];
+let activeError: string | undefined;
+try { active = await activeWorkouts(env.DB); }
+catch { activeError = "Could not load in-progress workouts. Please try again."; }
 ---
 
 <BaseLayout title="Exercise Log · Bar Calculator" active="log">
 	<ExerciseLog
 		client:load
 		sessions={sessions}
-		error={loadError}
+		error={loadError ?? activeError}
+		active={active}
 		formError={formError}
 		formInitial={formInitial}
 		savedId={savedId}

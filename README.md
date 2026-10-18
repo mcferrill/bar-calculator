@@ -10,9 +10,10 @@ Success means logging workouts semi-regularly because the app is useful at the b
 
 ## Current capabilities
 
-- **Calculator (`/`):** Enter working and starting warmup weights, choose a 45 lb standard, 33 lb women's, or 15 lb technique bar, and see total weight, weight per side, and plate illustrations. Three intermediate warmups use 33%, 55%, and 75% of the gap between starting and working weight, rounded down to 5 lb increments.
-- **Exercise log (`/log`):** Create, edit, and delete server-persisted sessions containing multiple lifts and blocks of sets, reps, and weight. Record dates, lb/kg units, optional bodyweight, and lift/session notes. Browse history newest first, grouped by month.
-- The data model supports rep ranges, duration, and distance, but those fields are not currently exposed for entry.
+- **Calculator (`/`):** Enter a working weight and see its plates. Warmups are optional: enter a starting weight to see recommended weights at 33%, 55%, and 75% of the gap, rounded down to 5 lb increments. A collapsed dropdown defaults to a 45 lb bar and can select the 33 lb or 15 lb bar.
+- **Exercise log (`/log`):** Create, edit, and delete server-persisted sessions containing multiple lifts and blocks of sets, reps, and weight. New entries assume pounds. Existing records retain their stored unit, which is preserved when edited but not offered as a selector. Record dates, optional bodyweight, and lift/session notes. Browse history newest first, grouped by month.
+- **Workout (`/workout?id=…`):** Start from the exercise log, record individual strength or cardio sets, resume in-progress sessions, remove mistakes, and finish into history. Each recorded set is immediately persisted on the server. Duration (seconds) and distance (meters) are available under cardio/timed activity. Rep ranges remain supported by the data model but are not exposed for entry.
+- Inside the recording form, plates update immediately with the entered weight. A bar dropdown and collapsed recommended-warmup section keep the default view compact. A sets field records a block such as 3×5 in one entry.
 
 ## Product direction
 
@@ -21,7 +22,7 @@ These are requirements and priorities, not a claim that every feature is impleme
 - Keep a **standalone calculator tab**, usable while logged out and offline. It currently runs client-side; reliable offline opening/reloading still needs support and verification.
 - Keep the current barbell warmup formula and fixed standard plate selection. Equipment needs are primarily the owner's; customization is unnecessary for now.
 - Focus on strength training, especially Starting Strength–style workouts, while supporting basic cardio and other activity records.
-- Make workout entry and returning to a workout easy. A **Start workout → record sets → finish workout** flow, with a calculator available for a lift's warmup or work weight, is a candidate—not a settled workflow. If introduced, in-progress sessions should save changes on the server rather than wait for completion.
+- Make workout entry and returning to a workout easy. The **Start workout → record sets → finish workout** flow now saves recorded sets on the server throughout training. Unsubmitted inputs and session notes are not autosaved; notes save on finish, with a warning before leaving unsaved inputs.
 - Make history useful through recent training frequency and previous results for a lift before adding charts.
 - Keep persistence on the server. Only whitelisted users may create accounts or access logs, with private per-user records. Authentication and ownership enforcement are not currently implemented and must precede use by friends.
 
@@ -85,4 +86,22 @@ Custom domain: attach `barcalc.app` on the Worker (zone already on Cloudflare DN
 - Schema: session → lifts → blocks (`sets`, `reps`, optional `repsTo` / `weight` / timed fields)
 - Read path: `getLiveCollection("sessions")` via D1 live loader
 - Write path: POST `/log` form → `insertSession`, `updateSession`, or `deleteSession` in `src/lib/session.ts`
+- Workout write path: POST `/workout` → `src/lib/workout.ts`. Migration `0003_workouts.sql` adds active/completed status and optimistic revisions; existing sessions remain completed. Stale submissions cannot duplicate or overwrite sets.
 - Migrate before first use: `npm run db:migrate:local` (or `:remote`)
+
+## Local checks
+
+```bash
+node scripts/check-session.mjs
+npx astro check
+npm run build
+```
+
+With a migrated local server running, `scripts/check-workout-browser.mjs` exercises the workout lifecycle, validation, resuming, calculator linkage, cardio, kg, mobile/desktop layout, and editing finished sessions. It creates and removes its own test workouts. It requires an existing Playwright installation and Chromium, without adding an application dependency:
+
+```bash
+BASE_URL=http://localhost:4322 \
+PLAYWRIGHT_MODULE=/absolute/path/to/playwright/index.mjs \
+CHROMIUM_PATH=/absolute/path/to/chromium \
+node scripts/check-workout-browser.mjs
+```

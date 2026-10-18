@@ -25,6 +25,7 @@ export type SessionView = {
 
 type Props = {
 	sessions: SessionView[];
+	active?: SessionView[];
 	error?: string;
 	formError?: string;
 	formInitial?: SessionFormValues;
@@ -71,6 +72,7 @@ function groupSessions(sessions: SessionView[]) {
 
 export default function ExerciseLog({
 	sessions,
+	active = [],
 	error,
 	formError,
 	formInitial,
@@ -127,10 +129,27 @@ export default function ExerciseLog({
 		<div className="mx-auto w-full max-w-6xl space-y-8 px-5 pt-4 pb-8">
 			<div className="flex flex-wrap items-center justify-between gap-3">
 				<h1 className="text-xl">Exercise Log</h1>
-				<button type="button" className={btnPrimary} onClick={() => show()}>
-					Log session
+				<button type="button" className="min-h-11 px-3 py-2 text-sm text-blue-300 underline" onClick={() => show()}>
+					Log past session
 				</button>
 			</div>
+
+			<section className="space-y-3 rounded-sm bg-gray-800 p-4" aria-labelledby="start-heading">
+				<h2 id="start-heading" className="font-medium">Train now</h2>
+				<form method="POST" action="/workout" className="flex flex-wrap items-end gap-3">
+					<input type="hidden" name="intent" value="start" />
+					<label className="text-sm">Date
+						<input required type="date" name="date" defaultValue={new Date().toLocaleDateString("en-CA")} className="mt-1 block min-h-11 rounded-sm bg-gray-700 p-2" />
+					</label>
+					<button className={btnPrimary}>Start workout</button>
+				</form>
+				{active.length > 0 && <div className="space-y-2">
+					<h3 className="text-sm text-gray-300">In progress</h3>
+					{active.map((workout) => <a key={workout.id} href={`/workout?id=${workout.id}`} className="block rounded-sm bg-gray-700 p-3 hover:bg-gray-600">
+						Resume {formatSessionDate(workout.date).day} · {workout.lifts.map((lift) => lift.name).join(", ") || "No sets yet"} →
+					</a>)}
+				</div>}
+			</section>
 
 			{formError && !formInitial ? (
 				<p className="text-sm text-yellow-400">{formError}</p>

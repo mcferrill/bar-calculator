@@ -58,7 +58,7 @@ export function rowToSession(row: SessionRow): Session & { id: string } {
 
 export async function listSessions(db: D1Database): Promise<(Session & { id: string })[]> {
 	const { results } = await db
-		.prepare("SELECT id, date, unit, bodyweight, notes, lifts, created_at FROM sessions ORDER BY date DESC, created_at DESC")
+		.prepare("SELECT id, date, unit, bodyweight, notes, lifts, created_at FROM sessions WHERE status = 'completed' ORDER BY date DESC, created_at DESC")
 		.all<SessionRow>();
 	return (results ?? []).map(rowToSession);
 }
@@ -110,7 +110,7 @@ export async function updateSession(
 		.prepare(
 			`UPDATE sessions
 			 SET date = ?, unit = ?, bodyweight = ?, notes = ?, lifts = ?
-			 WHERE id = ?`,
+			 WHERE id = ? AND status = 'completed'`,
 		)
 		.bind(...bindSession(session), id)
 		.run();
