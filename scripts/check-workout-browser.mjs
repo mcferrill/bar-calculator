@@ -9,7 +9,7 @@ page.on("pageerror", (error) => errors.push(error.message));
 page.on("dialog", (dialog) => dialog.accept());
 let id;
 try {
-	await page.goto(`${base}/log`);
+	await page.goto(base);
 	assert.equal(await page.locator("select[name=unit]").count(), 0);
 	await page.getByRole("button", { name: "Start workout", exact: true }).click();
 	await page.waitForURL("**/workout?id=*");
@@ -94,7 +94,7 @@ try {
 	assert.match(invalid, /role="alert"/);
 	await page.locator("textarea[name=notes]").fill("Browser flow verified");
 	await page.getByRole("button", { name: "Finish workout", exact: true }).click();
-	await page.waitForURL("**/log?saved=*");
+	await page.waitForURL("**/?saved=*");
 	await page.locator(`#session-${id}`).waitFor();
 	assert.match(await page.locator(`#session-${id}`).innerText(), /Browser flow verified/);
 	assert.match(await page.locator(`#session-${id}`).innerText(), /1000 m 10:00/);
@@ -108,10 +108,10 @@ try {
 	// Clean up only this test's completed workout using the existing log endpoint.
 	await page.evaluate(async (id) => {
 		const data = new FormData(); data.set("intent", "delete"); data.set("id", id);
-		await fetch("/log", { method: "POST", body: data });
+		await fetch("/", { method: "POST", body: data });
 	}, id);
 	id = undefined;
-	await page.goto(`${base}/log`);
+	await page.goto(base);
 	await page.getByRole("button", { name: "Start workout", exact: true }).click();
 	await page.waitForURL("**/workout?id=*");
 	id = new URL(page.url()).searchParams.get("id");
@@ -127,9 +127,9 @@ try {
 	await page.waitForLoadState("networkidle");
 	assert.match(await page.locator("body").innerText(), /1×5 @ 80 lb/);
 	await page.getByRole("button", { name: "Discard workout", exact: true }).click();
-	await page.waitForURL((url) => url.pathname === "/log");
+	await page.waitForURL((url) => url.pathname === "/");
 	id = undefined;
-	await page.goto(base);
+	await page.goto(`${base}/calculator`);
 	await page.getByLabel("Work weight (lb)", { exact: true }).waitFor();
 	assert.equal(await page.getByRole("radio").count(), 0);
 	await page.getByLabel("Bar weight", { exact: true }).selectOption("15");

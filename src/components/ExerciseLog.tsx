@@ -88,7 +88,7 @@ export default function ExerciseLog({
 	useEffect(() => {
 		if (!savedId) return;
 		document.getElementById(`session-${savedId}`)?.scrollIntoView({ block: "center" });
-		history.replaceState(null, "", "/log");
+		history.replaceState(null, "", "/");
 	}, [savedId]);
 
 	useEffect(() => {
@@ -162,7 +162,7 @@ export default function ExerciseLog({
 					if (isDirty() && !confirm("Discard this workout?")) e.preventDefault();
 				}}
 				onClose={() => {
-					if (location.search) history.replaceState(null, "", "/log");
+					if (location.search) history.replaceState(null, "", "/");
 				}}
 			>
 				<h2 className="px-4 pt-4 text-base font-medium">

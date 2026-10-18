@@ -83,7 +83,7 @@ export default function SessionForm({
 				<form
 					id="delete-session"
 					method="POST"
-					action="/log"
+					action="/"
 					className="hidden"
 					onSubmit={(event) => {
 						const name = initial.lifts[0]?.name;
@@ -96,7 +96,7 @@ export default function SessionForm({
 			) : null}
 			<form
 				method="POST"
-				action="/log"
+			action="/"
 				data-session-form
 				className="flex min-h-0 w-full flex-1 flex-col"
 				onKeyDown={onKeyDown}

@@ -24,17 +24,17 @@ const linkActive = `${linkBase} bg-gray-700 text-gray-100`;
 		<nav class="flex gap-2 px-5 pt-4 pb-2 border-b border-gray-700">
 			<a
 				href="/"
-				class={active === "calculator" ? linkActive : linkIdle}
-				aria-current={active === "calculator" ? "page" : undefined}
-			>
-				Calculator
-			</a>
-			<a
-				href="/log"
 				class={active === "log" ? linkActive : linkIdle}
 				aria-current={active === "log" ? "page" : undefined}
 			>
 				Exercise Log
+			</a>
+			<a
+				href="/calculator"
+				class={active === "calculator" ? linkActive : linkIdle}
+				aria-current={active === "calculator" ? "page" : undefined}
+			>
+				Calculator
 			</a>
 		</nav>
 		<main>
