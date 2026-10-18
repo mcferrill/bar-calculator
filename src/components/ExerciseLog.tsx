@@ -124,7 +124,7 @@ export default function ExerciseLog({
 	}
 
 	return (
-		<div className="px-5 pt-4 pb-8 max-w-3xl space-y-8">
+		<div className="mx-auto w-full max-w-6xl space-y-8 px-5 pt-4 pb-8">
 			<div className="flex flex-wrap items-center justify-between gap-3">
 				<h1 className="text-xl">Exercise Log</h1>
 				<button type="button" className={btnPrimary} onClick={() => show()}>
@@ -168,51 +168,55 @@ export default function ExerciseLog({
 								<h3 className="mb-2 text-sm text-gray-100/70">{group.month}</h3>
 								<ul className="space-y-3">
 									{group.sessions.map((session) => (
-<li
-											key={session.id}
-											id={`session-${session.id}`}
-											role="button"
-											tabIndex={0}
-											className={`cursor-pointer rounded-sm bg-gray-700 p-3 hover:bg-gray-600 ${
-												session.id === savedId ? "ring-2 ring-emerald-500" : ""
-											}`}
-											onClick={() => show(draftFromSession(session))}
-											onKeyDown={(e) => {
-												if (e.key !== "Enter" && e.key !== " ") return;
-												e.preventDefault();
-												show(draftFromSession(session));
-											}}
-										>
-												<span className="flex items-baseline justify-between gap-2">
+											<li
+												key={session.id}
+												id={`session-${session.id}`}
+												role="button"
+												tabIndex={0}
+												className={`cursor-pointer rounded-sm bg-gray-700 p-3 hover:bg-gray-600 sm:flex sm:items-center sm:gap-6 ${
+													session.id === savedId ? "ring-2 ring-emerald-500" : ""
+												}`}
+												onClick={() => show(draftFromSession(session))}
+												onKeyDown={(e) => {
+													if (e.key !== "Enter" && e.key !== " ") return;
+													e.preventDefault();
+													show(draftFromSession(session));
+												}}
+											>
+												<span className="flex items-baseline justify-between gap-2 sm:block sm:w-36 sm:shrink-0">
 													<span className="font-medium">
 														{formatSessionDate(session.date).day}
 													</span>
 													{session.id === savedId ? (
-														<span className="text-sm text-emerald-500">Saved</span>
+														<span className="text-sm text-emerald-500 sm:mt-1 sm:block">
+															Saved
+														</span>
 													) : null}
 												</span>
-												<ul className="mt-2 space-y-1.5">
-													{session.lifts.map((lift, i) => (
-														<li key={`${session.id}-${i}`} className="text-sm">
-															<span className="font-medium">{lift.name}</span>
-															<span className="text-gray-100/80">
-																{" — "}
-																{lift.blocks
-																	.map((b) => formatBlock(b, session.unit))
-																	.join(" · ")}
-															</span>
-															{lift.notes ? (
-																<span className="block text-gray-100/60">
-																	{lift.notes}
+												<div className="min-w-0 sm:flex-1">
+													<ul className="mt-2 space-y-1.5 sm:mt-0 sm:flex sm:flex-wrap sm:gap-x-6 sm:gap-y-1 sm:space-y-0">
+														{session.lifts.map((lift, i) => (
+															<li key={`${session.id}-${i}`} className="text-sm">
+																<span className="font-medium">{lift.name}</span>
+																<span className="text-gray-100/80">
+																	{" — "}
+																	{lift.blocks
+																		.map((b) => formatBlock(b, session.unit))
+																		.join(" · ")}
 																</span>
-															) : null}
-														</li>
-													))}
-												</ul>
-												{session.notes ? (
-													<p className="mt-2 text-sm text-gray-100/70">{session.notes}</p>
-												) : null}
-										</li>
+																{lift.notes ? (
+																	<span className="block text-gray-100/60">
+																		{lift.notes}
+																	</span>
+																) : null}
+															</li>
+														))}
+													</ul>
+													{session.notes ? (
+														<p className="mt-2 text-sm text-gray-100/70">{session.notes}</p>
+													) : null}
+												</div>
+											</li>
 									))}
 								</ul>
 							</section>
