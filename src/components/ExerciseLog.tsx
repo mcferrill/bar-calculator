@@ -166,7 +166,7 @@ export default function ExerciseLog({
 				}}
 			>
 				<h2 className="px-4 pt-4 text-base font-medium">
-					{draft?.intent === "update" ? "Edit session" : "Log session"}
+					{draft?.intent === "update" ? `Edit session · ${formatSessionDate(draft.date).day.replace(/^\w+, /, "")}, ${draft.date.slice(0, 4)}` : "Log session"}
 				</h2>
 				{modalError ? (
 					<p className="px-4 pt-2 text-sm text-yellow-400">{modalError}</p>
