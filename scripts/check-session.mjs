@@ -64,14 +64,15 @@ function fake(changes, sink) {
 }
 
 const sink = {};
-assert.equal(await updateSession(fake(1, sink), "abc", session), true);
+assert.equal(await updateSession(fake(1, sink), "owner", "abc", session), true);
 assert.match(sink.sql, /WHERE id = \?/);
-assert.equal(sink.args.at(-1), "abc");
-assert.equal(await updateSession(fake(0, sink), "missing", session), false);
-assert.equal(await deleteSession(fake(1, sink), "abc"), true);
+assert.equal(sink.args.at(-2), "abc");
+assert.equal(sink.args.at(-1), "owner");
+assert.equal(await updateSession(fake(0, sink), "owner", "missing", session), false);
+assert.equal(await deleteSession(fake(1, sink), "owner", "abc"), true);
 assert.match(sink.sql, /DELETE FROM sessions WHERE id = \?/);
-assert.deepEqual(sink.args, ["abc"]);
-assert.equal(await deleteSession(fake(0, sink), "nope"), false);
+assert.deepEqual(sink.args, ["abc", "owner"]);
+assert.equal(await deleteSession(fake(0, sink), "owner", "nope"), false);
 
 assert.equal(formatSessionDate("2024-01-02").day, "Tue, Jan 2");
 assert.equal(formatSessionDate("2024-01-02").month, "January 2024");

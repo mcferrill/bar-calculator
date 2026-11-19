@@ -56,22 +56,24 @@ export function rowToSession(row: SessionRow): Session & { id: string } {
 	};
 }
 
-export async function listSessions(db: D1Database): Promise<(Session & { id: string })[]> {
+export async function listSessions(db: D1Database, userId: string): Promise<(Session & { id: string })[]> {
 	const { results } = await db
-		.prepare("SELECT id, date, unit, bodyweight, notes, lifts, created_at FROM sessions WHERE status = 'completed' ORDER BY date DESC, created_at DESC")
+		.prepare("SELECT id, date, unit, bodyweight, notes, lifts, created_at FROM sessions WHERE user_id = ? AND status = 'completed' ORDER BY date DESC, created_at DESC")
+		.bind(userId)
 		.all<SessionRow>();
 	return (results ?? []).map(rowToSession);
 }
 
 export async function getSession(
 	db: D1Database,
+	userId: string,
 	id: string,
 ): Promise<(Session & { id: string }) | undefined> {
 	const row = await db
 		.prepare(
-			"SELECT id, date, unit, bodyweight, notes, lifts, created_at FROM sessions WHERE id = ?",
+			"SELECT id, date, unit, bodyweight, notes, lifts, created_at FROM sessions WHERE id = ? AND user_id = ?",
 		)
-		.bind(id)
+		.bind(id, userId)
 		.first<SessionRow>();
 	return row ? rowToSession(row) : undefined;
 }
@@ -88,21 +90,23 @@ function bindSession(session: Session) {
 
 export async function insertSession(
 	db: D1Database,
+	userId: string,
 	session: Session,
 ): Promise<string> {
 	const id = crypto.randomUUID();
 	await db
 		.prepare(
-			`INSERT INTO sessions (id, date, unit, bodyweight, notes, lifts)
-			 VALUES (?, ?, ?, ?, ?, ?)`,
+			`INSERT INTO sessions (id, user_id, date, unit, bodyweight, notes, lifts)
+			 VALUES (?, ?, ?, ?, ?, ?, ?)`,
 		)
-		.bind(id, ...bindSession(session))
+		.bind(id, userId, ...bindSession(session))
 		.run();
 	return id;
 }
 
 export async function updateSession(
 	db: D1Database,
+	userId: string,
 	id: string,
 	session: Session,
 ): Promise<boolean> {
@@ -110,17 +114,17 @@ export async function updateSession(
 		.prepare(
 			`UPDATE sessions
 			 SET date = ?, unit = ?, bodyweight = ?, notes = ?, lifts = ?
-			 WHERE id = ? AND status = 'completed'`,
+			 WHERE id = ? AND user_id = ? AND status = 'completed'`,
 		)
-		.bind(...bindSession(session), id)
+		.bind(...bindSession(session), id, userId)
 		.run();
 	return result.success && result.meta.changes > 0;
 }
 
-export async function deleteSession(db: D1Database, id: string): Promise<boolean> {
+export async function deleteSession(db: D1Database, userId: string, id: string): Promise<boolean> {
 	const result = await db
-		.prepare("DELETE FROM sessions WHERE id = ?")
-		.bind(id)
+		.prepare("DELETE FROM sessions WHERE id = ? AND user_id = ?")
+		.bind(id, userId)
 		.run();
 	return result.success && result.meta.changes > 0;
 }

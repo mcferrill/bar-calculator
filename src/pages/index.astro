@@ -3,12 +3,12 @@ export const prerender = false;
 import BaseLayout from "../layouts/BaseLayout.astro";
 import ExerciseLog from "../components/ExerciseLog";
 import { activeWorkouts } from "../lib/workout";
-import { getLiveCollection } from "astro:content";
 import { env } from "cloudflare:workers";
 import {
 	deleteSession,
 	formValuesFromFormData,
 	insertSession,
+	listSessions,
 	sessionFromFormValues,
 	sessionToFormValues,
 	updateSession,
@@ -16,6 +16,7 @@ import {
 } from "../lib/session";
 
 Astro.response.headers.set("Cache-Control", "no-store");
+const userId = Astro.locals.user!.id;
 let formError: string | undefined;
 let editId = Astro.url.searchParams.get("edit") ?? undefined;
 let submitted: SessionFormValues | undefined;
@@ -27,7 +28,7 @@ if (Astro.request.method === "POST") {
 		if (intent === "delete") {
 			const id = String(form.get("id") ?? "");
 			if (!id) throw new Error("Missing session.");
-			if (!(await deleteSession(env.DB, id))) throw new Error("Session not found.");
+			if (!(await deleteSession(env.DB, userId, id))) throw new Error("Session not found.");
 			return Astro.redirect("/");
 		}
 		if (intent !== "create" && intent !== "update") throw new Error("Unknown action.");
@@ -38,9 +39,9 @@ if (Astro.request.method === "POST") {
 			savedId = String(form.get("id") ?? "");
 			editId = savedId || editId;
 			if (!savedId) throw new Error("Missing session.");
-			if (!(await updateSession(env.DB, savedId, session))) throw new Error("Session not found.");
+			if (!(await updateSession(env.DB, userId, savedId, session))) throw new Error("Session not found.");
 		} else {
-			savedId = await insertSession(env.DB, session);
+			savedId = await insertSession(env.DB, userId, session);
 		}
 		return Astro.redirect(`/?saved=${savedId}`);
 	} catch (err) {
@@ -48,19 +49,17 @@ if (Astro.request.method === "POST") {
 	}
 }
 
-const result = await getLiveCollection("sessions");
-const sessions = (result.entries ?? []).map((entry) => ({
-	id: entry.id,
-	...entry.data,
-}));
+let sessions: Awaited<ReturnType<typeof listSessions>> = [];
+let loadError: string | undefined;
+try { sessions = await listSessions(env.DB, userId); }
+catch { loadError = "Could not load sessions. Please try again."; }
 const editing = editId ? sessions.find((session) => session.id === editId) : undefined;
 if (editId && !editing && !submitted) formError = formError ?? "Session not found.";
 const formInitial = submitted ?? (editing ? sessionToFormValues(editing) : undefined);
-const loadError = result.error?.message;
 const savedId = Astro.url.searchParams.get("saved") ?? undefined;
 let active: Awaited<ReturnType<typeof activeWorkouts>> = [];
 let activeError: string | undefined;
-try { active = await activeWorkouts(env.DB); }
+try { active = await activeWorkouts(env.DB, userId); }
 catch { activeError = "Could not load in-progress workouts. Please try again."; }
 ---
 

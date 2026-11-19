@@ -8,6 +8,7 @@ import { changeWorkout, getWorkout, startWorkout } from "../lib/workout";
 import { formatBlock, formatSessionDate } from "../lib/format";
 
 Astro.response.headers.set("Cache-Control", "no-store");
+const userId = Astro.locals.user!.id;
 let id = Astro.url.searchParams.get("id") ?? "";
 let error: string | undefined;
 let submitted: FormData | undefined;
@@ -15,10 +16,10 @@ if (Astro.request.method === "POST") {
 	try {
 		submitted = await Astro.request.formData();
 		if (submitted.get("intent") === "start") {
-			id = await startWorkout(env.DB, submitted);
+			id = await startWorkout(env.DB, userId, submitted);
 			return Astro.redirect(`/workout?id=${id}`, 303);
 		}
-		const status = await changeWorkout(env.DB, id, submitted);
+		const status = await changeWorkout(env.DB, userId, id, submitted);
 		if (status === "completed") return Astro.redirect(`/?saved=${id}#session-${id}`, 303);
 		if (status === "discarded") return Astro.redirect("/", 303);
 		return Astro.redirect(`/workout?id=${id}&saved=1&lift=${encodeURIComponent(String(submitted.get("name") ?? ""))}#record`, 303);
@@ -30,7 +31,7 @@ if (Astro.request.method === "POST") {
 }
 let workout;
 try {
-	workout = id ? await getWorkout(env.DB, id) : undefined;
+	workout = id ? await getWorkout(env.DB, userId, id) : undefined;
 } catch {
 	error = "Could not load workout. Please try again.";
 }

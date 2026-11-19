@@ -9,7 +9,12 @@ page.on("pageerror", (error) => errors.push(error.message));
 page.on("dialog", (dialog) => dialog.accept());
 let id;
 try {
-	await page.goto(base);
+	assert.ok(process.env.TEST_EMAIL && process.env.TEST_PASSWORD, "Set TEST_EMAIL and TEST_PASSWORD for a manually provisioned local test account.");
+	await page.goto(`${base}/login`);
+	await page.getByLabel("Email", { exact: true }).fill(process.env.TEST_EMAIL);
+	await page.getByLabel("Password", { exact: true }).fill(process.env.TEST_PASSWORD);
+	await page.getByRole("button", { name: "Sign in", exact: true }).click();
+	await page.waitForURL((url) => url.pathname === "/");
 	assert.equal(await page.locator("select[name=unit]").count(), 0);
 	await page.getByRole("button", { name: "Start workout", exact: true }).click();
 	await page.waitForURL("**/workout?id=*");

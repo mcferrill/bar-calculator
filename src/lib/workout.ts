@@ -1,23 +1,23 @@
 import { z } from "astro/zod";
-import { rowToSession, type SessionRow } from "./session";
+import { rowToSession, type SessionRow } from "./session.ts";
 
 type WorkoutRow = SessionRow & { status: "active" | "completed"; revision: number };
 
-export async function getWorkout(db: D1Database, id: string) {
-	const row = await db.prepare("SELECT * FROM sessions WHERE id = ?").bind(id).first<WorkoutRow>();
+export async function getWorkout(db: D1Database, userId: string, id: string) {
+	const row = await db.prepare("SELECT * FROM sessions WHERE id = ? AND user_id = ?").bind(id, userId).first<WorkoutRow>();
 	return row ? { ...rowToSession(row), status: row.status, revision: row.revision } : undefined;
 }
 
-export async function activeWorkouts(db: D1Database) {
-	const { results } = await db.prepare("SELECT * FROM sessions WHERE status = 'active' ORDER BY created_at DESC").all<WorkoutRow>();
+export async function activeWorkouts(db: D1Database, userId: string) {
+	const { results } = await db.prepare("SELECT * FROM sessions WHERE user_id = ? AND status = 'active' ORDER BY created_at DESC").bind(userId).all<WorkoutRow>();
 	return results.map((row) => ({ ...rowToSession(row), revision: row.revision }));
 }
 
-export async function startWorkout(db: D1Database, form: FormData) {
+export async function startWorkout(db: D1Database, userId: string, form: FormData) {
 	const date = z.iso.date().parse(form.get("date"));
 	const id = crypto.randomUUID();
-	await db.prepare("INSERT INTO sessions (id, date, unit, lifts, status) VALUES (?, ?, ?, '[]', 'active')")
-		.bind(id, date, "lb").run();
+	await db.prepare("INSERT INTO sessions (id, user_id, date, unit, lifts, status) VALUES (?, ?, ?, ?, '[]', 'active')")
+		.bind(id, userId, date, "lb").run();
 	return id;
 }
 
@@ -44,8 +44,8 @@ export function recordedSet(form: FormData) {
 	});
 }
 
-export async function changeWorkout(db: D1Database, id: string, form: FormData) {
-	const workout = await getWorkout(db, id);
+export async function changeWorkout(db: D1Database, userId: string, id: string, form: FormData) {
+	const workout = await getWorkout(db, userId, id);
 	if (!workout || workout.status !== "active") throw new Error("This workout is no longer active. Return to the log.");
 	const revision = z.coerce.number().int().nonnegative().parse(form.get("revision"));
 	if (revision !== workout.revision) throw new Error("This workout changed in another tab. Reload before recording another set.");
@@ -71,15 +71,15 @@ export async function changeWorkout(db: D1Database, id: string, form: FormData) 
 		notes = z.string().max(10000).parse(form.get("notes") ?? "");
 		status = "completed";
 	} else if (intent === "discard") {
-		const result = await db.prepare("DELETE FROM sessions WHERE id = ? AND status = 'active' AND revision = ?").bind(id, revision).run();
+		const result = await db.prepare("DELETE FROM sessions WHERE id = ? AND user_id = ? AND status = 'active' AND revision = ?").bind(id, userId, revision).run();
 		if (!result.meta.changes) throw new Error("Workout changed. Reload and try again.");
 		return "discarded";
 	} else {
 		throw new Error("Unknown workout action.");
 	}
 	// ponytail: optimistic revision prevents duplicate submissions and stale tabs overwriting sets.
-	const result = await db.prepare("UPDATE sessions SET lifts = ?, notes = ?, status = ?, revision = revision + 1 WHERE id = ? AND status = 'active' AND revision = ?")
-		.bind(JSON.stringify(workout.lifts), notes, status, id, revision).run();
+	const result = await db.prepare("UPDATE sessions SET lifts = ?, notes = ?, status = ?, revision = revision + 1 WHERE id = ? AND user_id = ? AND status = 'active' AND revision = ?")
+		.bind(JSON.stringify(workout.lifts), notes, status, id, userId, revision).run();
 	if (!result.meta.changes) throw new Error("Workout changed. Reload and try again.");
 	return status;
 }

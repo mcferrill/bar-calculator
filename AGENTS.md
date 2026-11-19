@@ -16,7 +16,7 @@ Read `README.md` for current capabilities, product priorities, and development/d
 - Prioritize strength training, especially Starting Strength–style workouts. Allow basic cardio and other activities without burdening the strength-entry flow.
 - Keep workout persistence on the server. Offline workout-log synchronization is out of scope.
 - Accounts and logs are restricted to whitelisted users. Logs must be private and scoped to their owner; enforce authorization on server-side reads and writes, not only in the UI. Whitelist enforcement must cover account creation and log access.
-- Authentication and per-user ownership are not implemented yet. Do not treat the current log as ready for private multi-user use.
+- Better Auth email/password accounts are manually provisioned; public registration is disabled. Preserve session checks, same-origin mutation checks, and owner-scoped D1 queries. Legacy rows stay inaccessible until an operator explicitly assigns them.
 
 ## Priorities and workflow direction
 
@@ -37,12 +37,14 @@ A Start workout → record sets → finish workout flow, with calculator access 
 
 ## Code map
 
-- `src/pages/index.astro` / `src/components/Calculator.tsx`: standalone calculator.
-- `src/pages/log.astro`: log route and server-side create/update/delete handling.
+- `src/pages/calculator.astro` / `src/components/Calculator.tsx`: standalone public calculator.
+- `src/pages/index.astro`: private log route and server-side create/update/delete handling; `/log` redirects here.
+- `src/pages/workout.astro` / `src/lib/workout.ts`: owner-scoped in-progress workouts.
 - `src/components/ExerciseLog.tsx`: history and session dialog.
 - `src/components/SessionForm.tsx`: workout entry and editing.
 - `src/lib/session.ts`: session schema, form conversion, and D1 persistence.
-- `src/live.config.ts` / `src/loaders/sessions.ts`: live collection reads.
+- `src/lib/auth.ts` / `src/middleware.ts` / `src/pages/api/auth/[...all].ts`: Better Auth configuration, private-route protection, and auth handler.
+- `scripts/add-user.mjs`: operator-only account provisioning and optional legacy history assignment.
 - `migrations/`: D1 schema migrations.
 
 Stack: Astro with React islands, Tailwind CSS v4, and Cloudflare Workers + D1. Keep persistence and authorization on the server; keep public calculator functionality independent of database/auth availability.

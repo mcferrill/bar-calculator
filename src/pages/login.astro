@@ -1,0 +1,51 @@
+---
+export const prerender = false;
+import { env } from "cloudflare:workers";
+import BaseLayout from "../layouts/BaseLayout.astro";
+import { createAuth } from "../lib/auth";
+
+let error: string | undefined;
+let email = "";
+if (Astro.request.method === "POST") {
+	try {
+		const form = await Astro.request.formData();
+		email = String(form.get("email") ?? "").trim();
+		const headers = new Headers(Astro.request.headers);
+		headers.set("Content-Type", "application/json");
+		headers.delete("Content-Length");
+		// Use the handler (not the direct API) so Better Auth applies rate limiting.
+		const result = await createAuth(env).handler(new Request(new URL("/api/auth/sign-in/email", env.BETTER_AUTH_URL), {
+			method: "POST",
+			headers,
+			body: JSON.stringify({ email, password: String(form.get("password") ?? "") }),
+		}));
+		if (result.ok) {
+			const responseHeaders = new Headers(result.headers);
+			responseHeaders.set("Location", "/");
+			return new Response(null, { status: 303, headers: responseHeaders });
+		}
+		Astro.response.status = result.status === 429 ? 429 : 400;
+		error = result.status === 429 ? "Too many attempts. Please wait a minute and try again." : "Could not sign in. Check your email and password.";
+	} catch {
+		Astro.response.status = 503;
+		error = "Sign-in is temporarily unavailable. Please try again.";
+	}
+}
+---
+<BaseLayout title="Sign in · Bar Calculator" active="log">
+	<div class="mx-auto max-w-md space-y-5 px-5 py-8">
+		<h1 class="text-xl">Sign in</h1>
+		<p class="text-gray-300">Accounts are added manually. Public registration is not available.</p>
+		{error && <p role="alert" class="text-yellow-300">{error}</p>}
+		<form method="POST" class="space-y-4">
+			<label class="block">Email
+				<input class="mt-1 w-full rounded-sm bg-gray-700 p-2" name="email" type="email" autocomplete="username" required value={email} />
+			</label>
+			<label class="block">Password
+				<input class="mt-1 w-full rounded-sm bg-gray-700 p-2" name="password" type="password" autocomplete="current-password" required />
+			</label>
+			<button class="min-h-11 rounded-sm bg-blue-700 px-4 py-2">Sign in</button>
+		</form>
+		<a href="/calculator" class="text-blue-300 underline">Use the calculator without signing in</a>
+	</div>
+</BaseLayout>

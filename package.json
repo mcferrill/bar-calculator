@@ -4,6 +4,8 @@
 	"private": true,
 	"scripts": {
 		"dev": "astro dev",
+		"check": "node scripts/check-session.mjs && node scripts/check-auth.mjs && astro check",
+		"user:add": "node scripts/add-user.mjs",
 		"build": "wrangler types && astro build",
 		"preview": "astro build && astro preview",
 		"deploy": "npm run build && npm run db:migrate:remote && wrangler deploy",
@@ -19,6 +21,7 @@
 		"@astrojs/react": "^7.1.0",
 		"@tailwindcss/vite": "^4.3.3",
 		"astro": "^7.4.0",
+		"better-auth": "^1.7.26",
 		"react": "^19.2.5",
 		"react-dom": "^19.2.5",
 		"tailwindcss": "^4.3.3",

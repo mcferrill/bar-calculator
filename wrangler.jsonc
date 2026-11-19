@@ -10,6 +10,9 @@
 		"directory": "./dist",
 		"binding": "ASSETS"
 	},
+	"vars": {
+		"BETTER_AUTH_URL": "https://barcalc.app"
+	},
 	"observability": {
 		"enabled": true
 	},

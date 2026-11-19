@@ -1,0 +1,97 @@
+---
+export const prerender = false;
+import { env } from "cloudflare:workers";
+import BaseLayout from "../layouts/BaseLayout.astro";
+import { createAuth } from "../lib/auth";
+
+let error: string | undefined;
+let email = Astro.locals.user!.email;
+if (Astro.request.method === "POST") {
+	try {
+		const form = await Astro.request.formData();
+		const intent = form.get("intent");
+		if (intent !== "email" && intent !== "password") throw new Error("Unknown account action.");
+		const currentPassword = String(form.get("currentPassword") ?? "");
+		const newPassword = String(form.get("newPassword") ?? "");
+		if (intent === "password" && newPassword !== form.get("confirmPassword")) {
+			throw new Error("New passwords do not match.");
+		}
+		if (intent === "email") email = String(form.get("newEmail") ?? "").trim().toLowerCase();
+		const headers = new Headers(Astro.request.headers);
+		headers.set("Content-Type", "application/json");
+		headers.delete("Content-Length");
+		const auth = createAuth(env);
+		// Use the handler so rate limits and password checks cover both forms and direct API calls.
+		const result = await auth.handler(new Request(new URL(`/api/auth/change-${intent}`, env.BETTER_AUTH_URL), {
+			method: "POST",
+			headers,
+			body: JSON.stringify(intent === "email" ? { currentPassword, newEmail: email }
+				: { currentPassword, newPassword, revokeOtherSessions: true }),
+		}));
+		if (!result.ok) {
+			const detail = await result.json().catch(() => ({})) as { code?: string };
+			Astro.response.status = result.status === 429 ? 429 : 400;
+			if (result.status === 429) throw new Error("Too many attempts. Please wait a minute and try again.");
+			if (detail.code === "INVALID_PASSWORD") throw new Error("Current password is incorrect.");
+			if (detail.code === "SESSION_EXPIRED" || detail.code === "SESSION_NOT_FRESH" || result.status === 401) {
+				throw new Error("Please sign out and sign in again before changing your credentials.");
+			}
+			throw new Error(intent === "email" ? "Could not update email. Enter a different valid address."
+				: "Could not update password. Use between 12 and 128 characters.");
+		}
+		// Better Auth deliberately returns success for an already-used email; don't claim it changed.
+		if (intent === "email" && (await auth.api.getSession({ headers: Astro.request.headers }))?.user.email !== email) {
+			throw new Error("Email was not changed. Choose a different address.");
+		}
+		const responseHeaders = new Headers(result.headers);
+		responseHeaders.set("Location", `/account?saved=${intent}`);
+		return new Response(null, { status: 303, headers: responseHeaders });
+	} catch (err) {
+		if (Astro.response.status === 200) Astro.response.status = 400;
+		error = err instanceof Error ? err.message : "Could not update credentials. Please try again.";
+	}
+}
+const field = "mt-1 w-full rounded-sm bg-gray-700 p-2";
+const button = "min-h-11 rounded-sm bg-blue-700 px-4 py-2";
+const saved = Astro.url.searchParams.get("saved");
+---
+<BaseLayout title="Account · Bar Calculator" active="account">
+	<div class="mx-auto max-w-md space-y-6 px-5 py-8">
+		<h1 class="text-xl">Account</h1>
+		<p class="break-words text-gray-300">Signed in as {Astro.locals.user!.email}</p>
+		{error && <p role="alert" class="text-yellow-300">{error}</p>}
+		{!error && saved === "email" && <p role="status" class="text-emerald-400">Email updated. Use your new email next time you sign in.</p>}
+		{!error && saved === "password" && <p role="status" class="text-emerald-400">Password updated. Other sessions have been signed out.</p>}
+		<form method="POST">
+			<input type="hidden" name="intent" value="email" />
+			<fieldset class="space-y-4">
+				<legend class="text-lg">Change email</legend>
+				<p class="text-sm text-gray-300">This becomes your login email immediately. Double-check it: email verification and password recovery are not configured.</p>
+				<label class="block">New email
+					<input class={field} name="newEmail" type="email" autocomplete="email" required value={email} />
+				</label>
+				<label class="block">Current password
+					<input class={field} name="currentPassword" type="password" autocomplete="current-password" maxlength="128" required />
+				</label>
+				<button class={button}>Update email</button>
+			</fieldset>
+		</form>
+		<form method="POST">
+			<input type="hidden" name="intent" value="password" />
+			<fieldset class="space-y-4">
+				<legend class="text-lg">Change password</legend>
+				<p class="text-sm text-gray-300">Use 12–128 characters. Other sessions will be signed out; this session stays signed in.</p>
+				<label class="block">Current password
+					<input class={field} name="currentPassword" type="password" autocomplete="current-password" maxlength="128" required />
+				</label>
+				<label class="block">New password
+					<input class={field} name="newPassword" type="password" autocomplete="new-password" minlength="12" maxlength="128" required />
+				</label>
+				<label class="block">Confirm new password
+					<input class={field} name="confirmPassword" type="password" autocomplete="new-password" minlength="12" maxlength="128" required />
+				</label>
+				<button class={button}>Update password</button>
+			</fieldset>
+		</form>
+	</div>
+</BaseLayout>
